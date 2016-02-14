@@ -20,4 +20,14 @@ module JeaCmsImpl
 
     mutable_str
   end
+
+  def JeaCmsImpl.sub_file_contents( path, subs )
+
+    File.open(path) do |f|
+      f.map {|l| JeaCmsImpl.sub(l, subs)}.join
+    end
+
+  end
+
+
 end

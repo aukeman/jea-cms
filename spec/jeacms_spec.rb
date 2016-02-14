@@ -1,3 +1,4 @@
+require 'tempfile'
 require_relative '../lib/jeacms_impl'
 
 RSpec.describe 'JeaCmsImpl#sub' do 
@@ -57,5 +58,23 @@ RSpec.describe 'JeaCmsImpl#sub' do
     end
   end
 
+end
 
+RSpec.describe 'JeaCmsImpl#sub_file_contents' do 
+  context 'a file with no tags exists' do
+    before do
+      f=Tempfile.new 
+      @path=f.path
+      f.write("this is a test")
+      f.close
+    end
+
+    after do
+      File.delete @path
+    end
+
+    it 'should return the file contents' do
+      expect(JeaCmsImpl.sub_file_contents( @path, {}) ).to eq "this is a test"
+    end
+  end
 end
