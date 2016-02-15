@@ -2,6 +2,21 @@ require 'pathname'
 require 'tempfile'
 require_relative '../lib/jeacms_impl'
 
+def write_temp_file( contents='' )
+  f=Tempfile.new 
+  absolute_path=f.path
+  relative_path=Pathname.new(absolute_path).relative_path_from( Pathname.new(File.expand_path(File.dirname(__FILE__)))).to_s
+  f.write(contents)
+  yield f if block_given?
+  f.close
+
+  return absolute_path,relative_path
+end
+
+def delete_temp_file( path )
+  File.delete path
+end
+
 RSpec.describe 'JeaCmsImpl#sub' do 
   context 'no substitution values are given' do
     it 'should replace an empty key with the empty string' do
@@ -59,20 +74,51 @@ RSpec.describe 'JeaCmsImpl#sub' do
     end
   end
 
+  context 'there is an filepath in a tag' do
+    context 'which is absolute' do
+      context 'and points to a file which exists' do
+        context 'that does not contain any tags' do
+          it 'should replace the tag with file contents' do
+            expect(JeaCmsImpl.sub("before {{{ #{@absolute_path} }}} after", {})).to be == ('before this is a test after')
+          end
+
+          before do
+            @absolute_path,=write_temp_file 'this is a test'
+          end
+          after do
+            delete_temp_file @absolute_path      
+          end
+        end
+
+        context 'that does contain tags' do
+          it 'should replace the tag with file contents and replace tags in the file' do
+            expect(JeaCmsImpl.sub("before {{{ #{@absolute_path} }}} after", {'key'=>'value'})).to be == 'before this is value a test after'
+          end
+
+          before do
+            @absolute_path,=write_temp_file 'this is {{{ key }}} a test'
+          end
+          after do
+            delete_temp_file @absolute_path      
+          end
+
+        end
+
+      end
+    end
+
+  end
+
 end
 
 RSpec.describe 'JeaCmsImpl#sub_file_contents' do 
   context 'a file with no tags exists' do
     before do
-      f=Tempfile.new 
-      @absolute_path=f.path
-      @relative_path=Pathname.new(@absolute_path).relative_path_from( Pathname.new(File.expand_path(File.dirname(__FILE__)))).to_s
-      f.write("this is a test")
-      f.close
+      @absolute_path,@relative_path=write_temp_file 'this is a test'
     end
 
     after do
-      File.delete @absolute_path
+      delete_temp_file @absolute_path
     end
 
     it 'should return the file contents when the absolute path is given' do

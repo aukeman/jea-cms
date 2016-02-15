@@ -14,8 +14,14 @@ module JeaCmsImpl
     ([''] + tags).each do |tag|
 
       tag_sub=/{{{\s*#{tag}\s*}}}/
-      
-      mutable_str.gsub! tag_sub, mutable_subs[tag]
+
+      if File.exist? tag
+        replacement=JeaCmsImpl.sub_file_contents tag, mutable_subs
+      else
+        replacement=mutable_subs[tag]
+      end
+
+      mutable_str.gsub! tag_sub, replacement
     end
 
     mutable_str
