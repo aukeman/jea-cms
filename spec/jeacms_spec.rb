@@ -1,3 +1,4 @@
+require 'pathname'
 require 'tempfile'
 require_relative '../lib/jeacms_impl'
 
@@ -64,17 +65,24 @@ RSpec.describe 'JeaCmsImpl#sub_file_contents' do
   context 'a file with no tags exists' do
     before do
       f=Tempfile.new 
-      @path=f.path
+      @absolute_path=f.path
+      @relative_path=Pathname.new(@absolute_path).relative_path_from( Pathname.new(File.expand_path(File.dirname(__FILE__)))).to_s
       f.write("this is a test")
       f.close
     end
 
     after do
-      File.delete @path
+      File.delete @absolute_path
     end
 
-    it 'should return the file contents' do
-      expect(JeaCmsImpl.sub_file_contents( @path, {}) ).to eq "this is a test"
+    it 'should return the file contents when the absolute path is given' do
+      expect(JeaCmsImpl.sub_file_contents( @absolute_path, {}) ).to eq "this is a test"
     end
+
+    it 'should return the file contents when the relative path is given' do
+      expect(JeaCmsImpl.sub_file_contents( @relative_path, {}) ).to eq "this is a test"
+    end
+
+
   end
 end
