@@ -17,6 +17,8 @@ module JeaCmsImpl
 
       if File.exist? tag
         replacement=JeaCmsImpl.sub_file_contents tag, mutable_subs
+      elsif tag.include? File::SEPARATOR
+        replacement=''
       else
         replacement=mutable_subs[tag]
       end
