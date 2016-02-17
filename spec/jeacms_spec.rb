@@ -146,7 +146,6 @@ RSpec.describe 'JeaCmsImpl#sub' do
       end
     end
   end
-
 end
 
 RSpec.describe 'JeaCmsImpl#sub_file_contents' do 
@@ -166,5 +165,23 @@ RSpec.describe 'JeaCmsImpl#sub_file_contents' do
     it 'should return the file contents when the relative path is given' do
       expect(JeaCmsImpl.sub_file_contents( @relative_path, {}) ).to eq "this is a test"
     end
+  end
+
+  context 'a mult-line file ' do
+    it 'returns the file contents' do
+        expect(JeaCmsImpl.sub_file_contents(@absolute_path, {'key1' => 'value1', 'key2' => 'value2' })).to be == "this is line one\nthis is line two\nthis is line three\n"
+    end
+
+      before do
+        @absolute_path,=write_temp_file do |f|
+          f.puts "this is line one"
+          f.puts "this is line two"
+          f.puts "this is line three"
+        end
+      end
+
+      after do
+        delete_temp_file @absolute_path
+      end
   end
 end
